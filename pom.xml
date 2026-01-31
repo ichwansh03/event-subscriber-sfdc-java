@@ -34,10 +34,29 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
+		<!-- CometD client core -->
 		<dependency>
 			<groupId>org.cometd.java</groupId>
-			<artifactId>cometd-java-server-http-jakarta</artifactId>
-			<version>9.0.0</version>
+			<artifactId>cometd-java-client-common</artifactId>
+			<version>8.0.9</version>
+		</dependency>
+
+		<!-- CometD HTTP transport via Jetty -->
+		<dependency>
+			<groupId>org.cometd.java</groupId>
+			<artifactId>cometd-java-client-http-jetty</artifactId>
+			<version>8.0.9</version>
+		</dependency>
+
+		<!-- Jetty HTTP client -->
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-client</artifactId>
+		</dependency>
+		<!-- JSON processing -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
