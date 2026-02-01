@@ -26,8 +26,7 @@ public class SalesforceQueryService {
 
     public Map<String, Object> getAppLogById(String recordId) {
         String soql = String.format("SELECT Id, Name, Status__c, Report_Name__c FROM AppLog__c WHERE Id = '%s'", recordId);
-        String encodedQuery = URLEncoder.encode(soql, StandardCharsets.UTF_8);
-        String url = authService.getInstanceUrl()+"/services/data/"+apiVersion+"/query?q="+encodedQuery;
+        String url = authService.getInstanceUrl()+"/services/data/v"+apiVersion+"/query?q="+soql;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authService.getAccessToken());

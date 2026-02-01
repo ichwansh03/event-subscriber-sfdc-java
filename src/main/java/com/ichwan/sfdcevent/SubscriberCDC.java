@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -66,21 +67,14 @@ public class SubscriberCDC {
         client.getChannel("/data/AppLog__ChangeEvent")
                 .subscribe((ch, msg) -> {
                     log.info("CDC Successfully subscribe: {}", msg.getData());
-
-                    Map<String, Object> data = (Map<String, Object>) msg.getData();
-                    if (data == null) log.warn("CDC data is null");
-
-                    Map<String, Object> header = (Map<String, Object>) data.get("ChangeEventHeader");
-                    if (header == null) log.warn("ChangeEventHeader not found: {}", header);
-
-                    String changeType = (String) header.get("changeType");
-                    List<String> recordIds = (List<String>) header.get("recordIds");
-
-                    String recordId = recordIds != null && !recordIds.isEmpty() ? recordIds.get(0) : null;
-
-                    log.info("CDC received: changeType={}, recordId={}", changeType, recordId);
-
-                    handleChange(changeType, recordId);
+                    asMap(msg.getData()).flatMap(data -> asMap(data.get("payload"))).ifPresent(payload -> {
+                        asMap(payload.get("ChangeEventHeader")).ifPresent(header -> {
+                            String changeType = (String) header.get("ChangeType");
+                            String recordId = ((List<String>) header.get("recordIds")).get(0);
+                            log.info("CDC changeType={}, recordId={}", changeType, recordId);
+                            handleChange(changeType, recordId);
+                        });
+                    });
                 });
     }
 
@@ -91,6 +85,10 @@ public class SubscriberCDC {
 
         Map<String, Object> logById = queryService.getAppLogById(recordId);
         if (logById != null) log.info("process applog record {}", logById);
+    }
+
+    private Optional<Map<String, Object>> asMap(Object obj) {
+        return (obj instanceof Map) ? Optional.of((Map<String, Object>) obj) : Optional.empty();
     }
 
     @PreDestroy
