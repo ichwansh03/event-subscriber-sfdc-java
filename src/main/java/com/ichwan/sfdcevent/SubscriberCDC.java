@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -22,6 +23,7 @@ import java.util.Map;
 public class SubscriberCDC {
 
     private final SalesforceAuthService authService;
+    private final SalesforceQueryService queryService;
 
     @Value("${salesforce.api-version}")
     private String apiVersion;
@@ -64,7 +66,31 @@ public class SubscriberCDC {
         client.getChannel("/data/AppLog__ChangeEvent")
                 .subscribe((ch, msg) -> {
                     log.info("CDC Successfully subscribe: {}", msg.getData());
+
+                    Map<String, Object> data = (Map<String, Object>) msg.getData();
+                    if (data == null) log.warn("CDC data is null");
+
+                    Map<String, Object> header = (Map<String, Object>) data.get("ChangeEventHeader");
+                    if (header == null) log.warn("ChangeEventHeader not found: {}", header);
+
+                    String changeType = (String) header.get("changeType");
+                    List<String> recordIds = (List<String>) header.get("recordIds");
+
+                    String recordId = recordIds != null && !recordIds.isEmpty() ? recordIds.get(0) : null;
+
+                    log.info("CDC received: changeType={}, recordId={}", changeType, recordId);
+
+                    handleChange(changeType, recordId);
                 });
+    }
+
+    private void handleChange(String changeType, String recordId) {
+        if ("DELETE".equals(changeType)) {
+            log.info("skip fetch for DELETE {}",recordId);
+        }
+
+        Map<String, Object> logById = queryService.getAppLogById(recordId);
+        if (logById != null) log.info("process applog record {}", logById);
     }
 
     @PreDestroy
