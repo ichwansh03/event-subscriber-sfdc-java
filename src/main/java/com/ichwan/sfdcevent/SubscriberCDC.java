@@ -5,7 +5,6 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cometd.bayeux.Channel;
-import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.client.BayeuxClient;
 import org.cometd.client.http.jetty.JettyHttpClientTransport;
@@ -49,13 +48,10 @@ public class SubscriberCDC {
 
         client = new BayeuxClient(cometdUrl, transport);
         client.getChannel(Channel.META_HANDSHAKE)
-                .addListener(new ClientSessionChannel.MessageListener() {
-                    @Override
-                    public void onMessage(ClientSessionChannel clientSessionChannel, Message message) {
-                        log.debug("handshake success: {}", message.isSuccessful());
+                .addListener((ClientSessionChannel.MessageListener) (clientSessionChannel, message) -> {
+                    log.debug("handshake success: {}", message.isSuccessful());
 
-                        if (!message.isSuccessful()) log.debug("handshake error: {}", message);
-                    }
+                    if (!message.isSuccessful()) log.debug("handshake error: {}", message);
                 });
         client.handshake();
 
