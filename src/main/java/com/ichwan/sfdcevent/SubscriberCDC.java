@@ -69,7 +69,7 @@ public class SubscriberCDC {
                     log.info("CDC Successfully subscribe: {}", msg.getData());
                     asMap(msg.getData()).flatMap(data -> asMap(data.get("payload"))).ifPresent(payload -> {
                         asMap(payload.get("ChangeEventHeader")).ifPresent(header -> {
-                            String changeType = (String) header.get("ChangeType");
+                            String changeType = (String) header.get("changeType");
                             String recordId = ((List<String>) header.get("recordIds")).get(0);
                             log.info("CDC changeType={}, recordId={}", changeType, recordId);
                             handleChange(changeType, recordId);
