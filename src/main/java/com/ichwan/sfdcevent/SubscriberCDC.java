@@ -67,13 +67,15 @@ public class SubscriberCDC {
         client.getChannel("/data/AppLog__ChangeEvent")
                 .subscribe((ch, msg) -> {
                     log.info("CDC Successfully subscribe: {}", msg.getData());
-                    asMap(msg.getData()).flatMap(data -> asMap(data.get("payload"))).ifPresent(payload -> {
-                        asMap(payload.get("ChangeEventHeader")).ifPresent(header -> {
-                            String changeType = (String) header.get("changeType");
-                            String recordId = ((List<String>) header.get("recordIds")).get(0);
-                            log.info("CDC changeType={}, recordId={}", changeType, recordId);
-                            handleChange(changeType, recordId);
-                        });
+
+                    asMap(msg.getData())
+                            .flatMap(data -> asMap(data.get("payload")))
+                            .flatMap(payload -> asMap(payload.get("ChangeEventHeader")))
+                            .ifPresent(header -> {
+                                String changeType = (String) header.get("changeType");
+                                String recordId = ((List<String>) header.get("recordIds")).get(0);
+                                log.info("CDC changeType={}, recordId={}", changeType, recordId);
+                                handleChange(changeType, recordId);
                     });
                 });
     }
